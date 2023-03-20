@@ -26,7 +26,7 @@ const reviewRoutes = require('./routes/reviews');
 const MongoStore = require('connect-mongo');
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp'
 // dbUrl
-mongoose.connect(dbUrl, { useUnifiedTopology: true,  useNewUrlParser: true})
+mongoose.connect(dbUrl, { useUnifiedTopology: true,useCreateIndex: true,  useNewUrlParser: true})
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -50,7 +50,9 @@ const secret = process.env.SECRET || 'kidnamedfinger';
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     touchAfter: 24 * 60 * 60,
-    secret
+    crypto: {
+        secret
+    }
 });
 
 store.on("error", function (e) {
@@ -116,6 +118,8 @@ app.use(
                 "https://images.unsplash.com/",
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
+            mediaSrc   : [ "https://res.cloudinary.com/dv5vm4sqh/" ],
+            childSrc   : [ "blob:" ]
         },
     })
 );
@@ -155,9 +159,9 @@ app.use((err, req, res, next) => {
     if (!err.message) err.message = 'Oh No, Something Went Wrong!'
     res.status(statusCode).render('error', { err })
 })
-
-app.listen(3000, () => {
-    console.log('Serving on port 3000')
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Serving on port ${port}`)
 })
 
 
